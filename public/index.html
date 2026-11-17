@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Red Team Foundations • 90-Day Learning Journal (Community Edition)</title>
+  
+  <!-- Modern Clean Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Standalone Vendor Libraries (Local, Zero-Failure) -->
+  <link rel="stylesheet" href="vendor/github-dark.min.css">
+  <script src="vendor/lucide.min.js"></script>
+  <script src="vendor/marked.min.js"></script>
+  <script src="vendor/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <!-- Preloaded Synchronous 90-Day Curriculum Data -->
+  <script src="data/roadmap.js"></script>
+
+  <!-- Pre-render Theme Application to prevent FOUC -->
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('redteam_theme') || 'dark';
+        if (theme === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Sleek Responsive Top Navigation Bar -->
+  <header class="top-nav" id="topNav">
+    <div class="top-nav-main">
+      <div class="nav-brand">
+        <span class="brand-title"><i data-lucide="shield" class="brand-shield-icon"></i> Foundations <span class="brand-sub">Journal</span></span>
+      </div>
+
+      <!-- Desktop Inline Clean Tabs (Single Row, NO Menu button on Desktop) -->
+      <nav class="desktop-nav-tabs" aria-label="Desktop Navigation">
+        <button class="nav-tab-link active" data-tab="studio">
+          <i data-lucide="book-open"></i>
+          <span>Today's Mission</span>
+        </button>
+        <button class="nav-tab-link" data-tab="roadmap">
+          <i data-lucide="map"></i>
+          <span>Syllabus</span>
+        </button>
+        <button class="nav-tab-link" data-tab="timer">
+          <i data-lucide="clock"></i>
+          <span>30-Min Protocol</span>
+        </button>
+        <button class="nav-tab-link" data-tab="my-vault">
+          <i data-lucide="archive"></i>
+          <span>Vault</span>
+        </button>
+        <button class="nav-tab-link" data-tab="arsenal">
+          <i data-lucide="shield-check"></i>
+          <span>Resources</span>
+        </button>
+        <button class="nav-tab-link" data-tab="settings">
+          <i data-lucide="settings"></i>
+          <span>Setup</span>
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <button class="btn btn-secondary btn-icon-only" id="btnThemeToggle" title="Toggle Theme" aria-label="Toggle Theme">
+          <i data-lucide="sun" id="themeToggleIcon"></i>
+        </button>
+        <button class="btn btn-primary btn-sm btn-new-note" id="btnQuickNewNote" title="Write Today's Note">
+          <i data-lucide="plus"></i>
+          <span class="hide-on-compact">Note</span>
+        </button>
+        <!-- Menu button: ONLY visible on small screens (mobile/tablet), hidden on desktop! -->
+        <button class="btn btn-secondary mobile-menu-toggle" id="btnMobileNavToggle" title="Open Navigation Menu" aria-label="Open Navigation Menu">
+          <i data-lucide="menu" id="menuToggleIcon"></i>
+          <span class="mobile-menu-text">Menu</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Drawer (Collapsible for Small Screens) -->
+    <div class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
+      <div class="drawer-stats-row">
+        <span class="streak-pill" id="storageBadge" title="Current Storage Mode">
+          💾 <span class="streak-text-full">Local Vault</span>
+        </span>
+        <button class="btn btn-secondary btn-xs" id="btnOpenSetupModal" title="Configure Storage or GitHub">
+          <i data-lucide="settings"></i> <span>Setup</span>
+        </button>
+      </div>
+      <div class="mobile-nav-links">
+        <button class="mobile-tab-btn active" data-tab="studio">
+          <div class="mobile-tab-left">
+            <i data-lucide="book-open"></i>
+            <span>Today's Mission</span>
+          </div>
+          <span class="badge-dot"></span>
+        </button>
+        <button class="mobile-tab-btn" data-tab="roadmap">
+          <div class="mobile-tab-left">
+            <i data-lucide="map"></i>
+            <span>Course Syllabus</span>
+          </div>
+          <span class="tab-badge" id="mobileRoadmapBadge">Day 0/90</span>
+        </button>
+        <button class="mobile-tab-btn" data-tab="timer">
+          <div class="mobile-tab-left">
+            <i data-lucide="clock"></i>
+            <span>30-Min Protocol</span>
+          </div>
+        </button>
+        <button class="mobile-tab-btn" data-tab="my-vault">
+          <div class="mobile-tab-left">
+            <i data-lucide="archive"></i>
+            <span>My Vault</span>
+          </div>
+          <span class="tab-badge" id="mobileVaultBadge">0</span>
+        </button>
+        <button class="mobile-tab-btn" data-tab="arsenal">
+          <div class="mobile-tab-left">
+            <i data-lucide="shield-check"></i>
+            <span>Resources</span>
+          </div>
+        </button>
+        <button class="mobile-tab-btn" data-tab="settings">
+          <div class="mobile-tab-left">
+            <i data-lucide="github"></i>
+            <span>GitHub / Vault</span>
+          </div>
+        </button>
+      </div>
+      <div class="mobile-nav-footer">
+        <button class="btn btn-secondary btn-sm w-100" id="btnMobileSetupModal">
+          <i data-lucide="settings"></i>
+          <span>Storage & GitHub Setup</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main App Content -->
+  <main class="app-main">
+
+    <!-- ==================== TAB 1: TODAY'S COURSE MISSION ==================== -->
+    <section class="tab-pane active" id="pane-studio">
+      <div class="studio-layout" id="studioContainer">
+        <!-- 1. Course Lesson Control Header -->
+        <div class="course-lesson-nav">
+          <div class="lesson-nav-left">
+            <button class="btn btn-secondary btn-sm" id="btnPrevDay" title="Previous Day">
+              <i data-lucide="chevron-left"></i>
+              <span class="hide-on-mobile">Prev</span>
+            </button>
+            <div class="lesson-picker-wrap">
+              <select id="daySelect" class="lesson-select form-control" title="Choose Course Lesson">
+                <!-- Dynamically populated with all 90 days -->
+              </select>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btnNextDay" title="Next Day">
+              <span class="hide-on-mobile">Next</span>
+              <i data-lucide="chevron-right"></i>
+            </button>
+          </div>
+
+          <div class="lesson-nav-right">
+            <button class="btn btn-outline btn-sm day-status-toggle" id="btnToggleDayStatus" title="Toggle Day Completion">
+              <i data-lucide="circle" id="dayStatusIcon"></i>
+              <span id="dayStatusText">In Progress</span>
+            </button>
+
+            <div class="view-switch-pills">
+              <button class="view-btn active" data-view="split" title="Split Screen">
+                <i data-lucide="columns"></i> <span class="hide-on-mobile">Split</span>
+              </button>
+              <button class="view-btn" data-view="edit" title="Editor Only">
+                <i data-lucide="edit-3"></i> <span>Write</span>
+              </button>
+              <button class="view-btn" data-view="preview" title="Preview Only">
+                <i data-lucide="eye"></i> <span>Preview</span>
+              </button>
+              <button class="view-btn" id="btnToggleZen" title="Zen Focus Fullscreen">
+                <i data-lucide="maximize-2"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Daily Course Mission & Tasks Checklist Card -->
+        <div class="course-task-card" id="courseTaskCard">
+          <div class="course-task-header">
+            <div class="course-task-meta">
+              <span class="course-badge" id="taskWeekBadge">WEEK 01</span>
+              <span class="course-phase" id="taskPhaseBadge">Phase 1: Technical Foundations</span>
+            </div>
+            <div class="course-task-actions">
+              <span class="task-counter-chip" id="taskCounterChip">0/3 Tasks</span>
+              <a href="https://www.netacad.com/" target="_blank" rel="noopener noreferrer" class="resource-link-chip" id="taskResourceLink">
+                <i data-lucide="external-link"></i> <span id="taskResourceName">Official Resource</span>
+              </a>
+              <button class="btn-toggle-task" id="btnToggleTaskCard" title="Minimize / Expand Mission Brief">
+                <i data-lucide="chevron-up" id="taskToggleIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="course-task-body" id="courseTaskBody">
+            <div class="task-goal-row">
+              <strong>Objective:</strong> <span id="taskGoalText">Understand what happens when you enter a website address into your browser.</span>
+            </div>
+            <div class="daily-tasks-checklist" id="dailyTasksChecklist">
+              <label class="task-item">
+                <input type="checkbox" id="taskCheck1" class="task-checkbox">
+                <span class="task-text"><strong>1. Concept Study (15 min):</strong> <span id="task1Desc">Understand client-server architecture, IP vs MAC, and DNS resolution.</span></span>
+              </label>
+              <label class="task-item">
+                <input type="checkbox" id="taskCheck2" class="task-checkbox">
+                <span class="task-text"><strong>2. Hands-on Lab (10 min):</strong> <span id="task2Desc">Execute diagnostic terminal commands (dig, ip addr, traceroute).</span></span>
+              </label>
+              <label class="task-item">
+                <input type="checkbox" id="taskCheck3" class="task-checkbox">
+                <span class="task-text"><strong>3. Active Recall & Journal (5 min):</strong> <span id="task3Desc">Answer the 5 Core Engineering Framework questions below.</span></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Clean Workspace Toolbar -->
+        <div class="workspace-toolbar">
+          <div class="toolbar-left">
+            <button class="btn btn-ghost btn-xs" id="btnLoad5Questions" title="Load 5 Core Questions Template">
+              <i data-lucide="help-circle"></i> <span>5 Questions</span>
+            </button>
+            <button class="btn btn-ghost btn-xs" id="btnLoadDay1" title="Load Day 1 Sample Note">
+              <i data-lucide="sparkles"></i> <span>Sample Note</span>
+            </button>
+            <button class="btn btn-ghost btn-xs hide-on-mobile" id="btnToggleMetadata" title="Customize Target File & Path">
+              <i data-lucide="sliders"></i> <span>File Path</span>
+            </button>
+          </div>
+
+          <div class="toolbar-right">
+            <span class="auto-save-text" id="draftStatusText">Auto-saved</span>
+            <button class="btn btn-ghost btn-xs" id="btnOpenDraftsModal" title="View Drafts">
+              <i data-lucide="inbox"></i> <span>Drafts (<span id="draftCountBadge">0</span>)</span>
+            </button>
+            <button class="btn btn-ghost btn-xs" id="btnSaveDraftManual" title="Save Draft">
+              <i data-lucide="save"></i> <span>Save</span>
+            </button>
+            <button class="btn btn-ghost btn-xs" id="btnCopyMarkdown" title="Copy Raw Markdown">
+              <i data-lucide="copy"></i> <span>Copy</span>
+            </button>
+            <button class="btn btn-ghost btn-xs" id="btnDownloadMarkdown" title="Download Markdown File">
+              <i data-lucide="download"></i>
+            </button>
+            <button class="btn btn-ghost btn-xs" id="btnClearEditor" title="Clear Notes">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Collapsible File Path Drawer (Hidden by default to eliminate visual noise) -->
+        <div class="metadata-drawer" id="metadataDrawer">
+          <div class="meta-field">
+            <label for="folderSelect">Module Directory</label>
+            <select id="folderSelect" class="form-control">
+              <option value="01-networking">01-networking</option>
+              <option value="02-linux">02-linux</option>
+              <option value="03-windows">03-windows</option>
+              <option value="04-programming">04-programming</option>
+              <option value="05-web-security">05-web-security</option>
+              <option value="06-red-team">06-red-team</option>
+              <option value="06-red-team/lab-reports">06-red-team/lab-reports</option>
+              <option value="daily-logs">daily-logs</option>
+            </select>
+          </div>
+          <div class="meta-field">
+            <label for="filenameInput">Target File</label>
+            <div class="path-input-wrap">
+              <span class="path-prefix" id="folderPrefixLabel">01-networking/</span>
+              <input type="text" id="filenameInput" class="form-control" placeholder="filename.md" value="day-01-networking-fundamentals.md">
+            </div>
+          </div>
+          <div class="meta-field">
+            <label for="titleInput">Topic Title</label>
+            <input type="text" id="titleInput" class="form-control" placeholder="Topic Title..." value="Client-Server Architecture, IP & MAC Addresses, DNS Intro">
+          </div>
+        </div>
+
+        <!-- 5. 100% Fluid Workspace: Markdown Editor & Live Preview (No Sidebar!) -->
+        <div class="studio-panes-wrapper split-mode" id="panesWrapper">
+          <!-- Left: Editor Pane -->
+          <div class="editor-pane">
+            <div class="pane-header">
+              <div class="pane-title">
+                <i data-lucide="edit-3"></i>
+                <span>Daily Journal Notes (Markdown)</span>
+              </div>
+              <div class="editor-stats">
+                <span id="wordCountLabel">0 words</span>
+                <span class="sep">•</span>
+                <span id="charCountLabel">0 chars</span>
+                <span class="sep">•</span>
+                <span id="readingTimeLabel">1 min read</span>
+              </div>
+            </div>
+            <textarea id="markdownEditor" class="markdown-textarea" spellcheck="false" placeholder="Loading day curriculum note..."></textarea>
+          </div>
+
+          <!-- Right: Live Preview Pane -->
+          <div class="preview-pane">
+            <div class="pane-header">
+              <div class="pane-title">
+                <i data-lucide="eye"></i>
+                <span>Formatted Reading View</span>
+              </div>
+            </div>
+            <div id="markdownPreview" class="markdown-body">
+              <!-- Rendered via marked.js + highlight.js -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Bottom Commit & Land Bar -->
+        <div class="studio-bottom-bar">
+          <div class="commit-input-wrap">
+            <label for="commitMsgInput" class="commit-label">
+              <i data-lucide="git-commit"></i>
+              <span class="hide-on-mobile">Commit:</span>
+            </label>
+            <input type="text" id="commitMsgInput" class="form-control" placeholder="Commit message (e.g. feat(notes): Day 01 - Networking)" value="feat(notes): Day 01 - Computer & Networking Fundamentals">
+          </div>
+          <div class="commit-actions-wrap">
+            <div class="keyboard-tip hide-on-mobile">
+              <span>Shortcut:</span> <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+            </div>
+            <button class="btn btn-primary btn-commit" id="btnPostToGitHub">
+              <i data-lucide="arrow-up-circle"></i>
+              <span id="btnPostLabel">Save to Vault / GitHub</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: 90-DAY ROADMAP ==================== -->
+    <section class="tab-pane" id="pane-roadmap">
+      <div class="page-hero-header">
+        <div class="page-hero-left">
+          <div class="page-hero-badge"><i data-lucide="map"></i> <span>CURRICULUM ROADMAP</span></div>
+          <h1 class="page-hero-title">Course Syllabus & 90-Day Curriculum</h1>
+          <p class="page-hero-desc">12 Structured Weeks • 3 Progressive Phases • 30-Minute Daily Study Protocol</p>
+        </div>
+      </div>
+      <div class="content-container">
+        <!-- Roadmap Header & Progress Bar -->
+        <div class="card summary-card">
+          <div class="summary-card-text">
+            <h2>90-Day Red Team Foundation Curriculum</h2>
+            <p>12 Weeks • 3 Phases • 30 Minutes Daily Protocol • Nov 16, 2026 to Feb 16, 2027</p>
+          </div>
+          <div class="summary-card-progress">
+            <div class="progress-info-row">
+              <span class="progress-label">Total Completion</span>
+              <span class="progress-percent" id="roadmapPercent">0%</span>
+            </div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="roadmapProgressBar" style="width: 0%;"></div>
+            </div>
+            <div class="progress-sub-info">
+              <span id="completedCountText">0 of 90 Days Completed</span>
+              <span id="daysRemainingText">90 Days Remaining</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive 90-Day Visual Grid / Punch Card -->
+        <div class="card matrix-card">
+          <div class="card-header-row">
+            <div class="card-title">
+              <i data-lucide="grid"></i>
+              <h3>90-Day Contribution Habit Matrix</h3>
+            </div>
+            <div class="matrix-legend">
+              <span class="legend-item"><span class="legend-box done"></span> Done</span>
+              <span class="legend-item"><span class="legend-box current"></span> Active / Today</span>
+              <span class="legend-item"><span class="legend-box pending"></span> Upcoming</span>
+            </div>
+          </div>
+          <div class="matrix-grid-container" id="matrixGridContainer">
+            <!-- 90 interactive boxes -->
+          </div>
+        </div>
+
+        <!-- Phase Tabs Filter -->
+        <div class="phase-filters">
+          <button class="phase-btn active" data-phase="all">All 90 Days</button>
+          <button class="phase-btn" data-phase="1">Month 1: Technical Foundations (Weeks 1-4)</button>
+          <button class="phase-btn" data-phase="2">Month 2: OS & Programming (Weeks 5-8)</button>
+          <button class="phase-btn" data-phase="3">Month 3: Red Team Methodology (Weeks 9-12)</button>
+        </div>
+
+        <!-- Weeks & Days Grid -->
+        <div class="weeks-accordion-wrap">
+          <div class="card-header-row" style="margin-bottom: 12px;">
+            <div class="card-title">
+              <i data-lucide="calendar"></i>
+              <h3>Curriculum Weeks & Daily Breakdown</h3>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-xs" id="btnExpandAllWeeks">
+                <i data-lucide="maximize-2"></i> Expand All
+              </button>
+              <button class="btn btn-secondary btn-xs" id="btnCollapseAllWeeks">
+                <i data-lucide="minimize-2"></i> Collapse All
+              </button>
+            </div>
+          </div>
+          <div class="weeks-accordion" id="weeksAccordionContainer">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: 30-MIN TIMER ==================== -->
+    <section class="tab-pane" id="pane-timer">
+      <div class="page-hero-header">
+        <div class="page-hero-left">
+          <div class="page-hero-badge"><i data-lucide="clock"></i> <span>FOCUSED PROTOCOL</span></div>
+          <h1 class="page-hero-title">30-Minute Daily Mastery Protocol</h1>
+          <p class="page-hero-desc">Phase 1: Active Recall (5m) • Phase 2: Core Concept (15m) • Phase 3: Hands-on Lab (10m)</p>
+        </div>
+      </div>
+      <div class="content-container">
+        <div class="card timer-card">
+          <div class="timer-header">
+            <div class="timer-badge">
+              <span class="status-dot"></span>
+              <span>Daily 30-Minute Protocol</span>
+            </div>
+            <h2>Focused Study Session</h2>
+            <p class="timer-quote">"Every day, produce something: a command executed, a packet understood, a small script, or a written note."</p>
+          </div>
+
+          <!-- Phase Steps Indicator -->
+          <div class="timer-phases-grid">
+            <div class="timer-phase-box active" id="phaseBox1">
+              <div class="phase-step-tag">Phase 1 • 0–5 min</div>
+              <h4>Active Recall</h4>
+              <p>Recall yesterday's concepts without looking at your notes.</p>
+            </div>
+            <div class="timer-phase-box" id="phaseBox2">
+              <div class="phase-step-tag">Phase 2 • 5–20 min</div>
+              <h4>Deep Study</h4>
+              <p>Study 1 concept from documentation, courses, or labs.</p>
+            </div>
+            <div class="timer-phase-box" id="phaseBox3">
+              <div class="phase-step-tag">Phase 3 • 20–30 min</div>
+              <h4>Hands-On Practice</h4>
+              <p>Run commands, inspect packets, write notes, solve labs.</p>
+            </div>
+          </div>
+
+          <!-- Countdown Clock -->
+          <div class="timer-display-wrap">
+            <div class="timer-circle-wrap">
+              <svg class="timer-svg" viewBox="0 0 100 100">
+                <circle class="timer-circle-bg" cx="50" cy="50" r="45"></circle>
+                <circle class="timer-circle-progress" id="timerProgressCircle" cx="50" cy="50" r="45"></circle>
+              </svg>
+              <div class="timer-time-display">
+                <span class="timer-digits" id="timerDisplay">30:00</span>
+                <span class="timer-current-phase-label" id="timerCurrentPhaseName">Phase 1: Active Recall</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timer Controls -->
+          <div class="timer-controls">
+            <button class="btn btn-primary btn-lg" id="btnTimerToggle">
+              <i data-lucide="play" id="timerToggleIcon"></i>
+              <span id="timerToggleText">Start 30-Min Session</span>
+            </button>
+            <button class="btn btn-secondary btn-lg" id="btnTimerReset">
+              <i data-lucide="rotate-ccw"></i>
+              <span>Reset</span>
+            </button>
+            <button class="btn btn-ghost btn-lg" id="btnTimerSoundTest">
+              <i data-lucide="volume-2"></i>
+              <span>Test Audio</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: MY NOTES VAULT ==================== -->
+    <section class="tab-pane" id="pane-my-vault">
+      <div class="page-hero-header">
+        <div class="page-hero-left">
+          <div class="page-hero-badge"><i data-lucide="archive"></i> <span>NOTES VAULT</span></div>
+          <h1 class="page-hero-title">Personal Study Archive & Notes Vault</h1>
+          <p class="page-hero-desc">Review your notes, search previous lessons, and export your markdown files</p>
+        </div>
+      </div>
+      <div class="explorer-layout">
+        <!-- Sidebar: Vault List -->
+        <aside class="explorer-sidebar">
+          <div class="explorer-sidebar-header">
+            <h3>My Notes Vault</h3>
+            <div style="display: flex; gap: 4px;">
+              <button class="btn btn-ghost btn-xs" id="btnExportAllNotes" title="Export All Notes as JSON">
+                <i data-lucide="download"></i>
+              </button>
+              <button class="btn btn-ghost btn-xs" id="btnRefreshVault" title="Refresh Vault">
+                <i data-lucide="refresh-cw"></i>
+              </button>
+            </div>
+          </div>
+          <div class="notes-filter-bar">
+            <input type="text" id="vaultSearchInput" class="form-control" placeholder="Search my notes...">
+          </div>
+          <div class="notes-tree" id="vaultTreeContainer">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </aside>
+
+        <!-- Main Viewer -->
+        <div class="explorer-viewer">
+          <div class="viewer-topbar" id="viewerTopbar">
+            <div class="viewer-meta">
+              <span class="viewer-path" id="viewerPath">Select a note from the left to inspect</span>
+            </div>
+            <div class="viewer-actions" id="viewerActions" style="display: none;">
+              <button class="btn btn-secondary btn-xs" id="btnEditInStudio">
+                <i data-lucide="edit-3"></i> <span>Edit in Studio</span>
+              </button>
+              <button class="btn btn-ghost btn-xs" id="btnDownloadSingleVaultNote" title="Download as .md file">
+                <i data-lucide="download"></i> <span>Download</span>
+              </button>
+              <button class="btn btn-ghost btn-xs" id="btnDeleteVaultNote" style="color: var(--danger-fg);" title="Delete note from vault">
+                <i data-lucide="trash-2"></i> <span>Delete</span>
+              </button>
+            </div>
+          </div>
+          <div class="viewer-content markdown-body" id="viewerContent">
+            <div class="empty-state">
+              <i data-lucide="archive" class="empty-icon"></i>
+              <p>Your saved daily notes will appear here. Write a note in the Studio and click "Save to Vault" or "Save to GitHub" to build your portfolio.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: ARSENAL ==================== -->
+    <section class="tab-pane" id="pane-arsenal">
+      <div class="page-hero-header">
+        <div class="page-hero-left">
+          <div class="page-hero-badge"><i data-lucide="shield-check"></i> <span>SECURITY ARSENAL</span></div>
+          <h1 class="page-hero-title">Curated Red Team Learning Resources</h1>
+          <p class="page-hero-desc">Authoritative platforms, documentation, and tools for your 90-day journey</p>
+        </div>
+      </div>
+      <div class="content-container">
+        <div class="section-heading">
+          <h2>Free & Open-Source Security Arsenal</h2>
+          <p>Curated learning resources, reference documentation, and practice wargames.</p>
+        </div>
+
+        <div class="arsenal-cards-grid">
+          <div class="card arsenal-card">
+            <div class="card-icon-wrap green"><i data-lucide="terminal"></i></div>
+            <div class="card-content">
+              <span class="card-tag">OS & CLI</span>
+              <h3>Linux Journey</h3>
+              <p>Structured path to master the Linux command line, filesystem hierarchy, and administration without relying on a GUI.</p>
+              <a href="https://labex.io/linuxjourney" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+
+          <div class="card arsenal-card">
+            <div class="card-icon-wrap cyan"><i data-lucide="activity"></i></div>
+            <div class="card-content">
+              <span class="card-tag">Packet Analysis</span>
+              <h3>Wireshark</h3>
+              <p>The world's foremost network packet protocol analyzer. Essential for capturing DNS queries, TLS handshakes, and TCP streams.</p>
+              <a href="https://www.wireshark.org/docs/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+
+          <div class="card arsenal-card">
+            <div class="card-icon-wrap purple"><i data-lucide="crosshair"></i></div>
+            <div class="card-content">
+              <span class="card-tag">Wargames</span>
+              <h3>OverTheWire Bandit</h3>
+              <p>A fun, beginner-friendly gamified CTF wargame specifically engineered to teach Linux terminal commands and security essentials.</p>
+              <a href="https://overthewire.org/wargames/bandit/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+
+          <div class="card arsenal-card">
+            <div class="card-icon-wrap red"><i data-lucide="globe"></i></div>
+            <div class="card-content">
+              <span class="card-tag">Web Security</span>
+              <h3>PortSwigger Academy</h3>
+              <p>Free, interactive web security labs by the creators of Burp Suite. Learn SQL injection, XSS, and broken access controls.</p>
+              <a href="https://portswigger.net/web-security" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+
+          <div class="card arsenal-card">
+            <div class="card-icon-wrap orange"><i data-lucide="box"></i></div>
+            <div class="card-content">
+              <span class="card-tag">Capstone Target</span>
+              <h3>OWASP Juice Shop</h3>
+              <p>Deliberately vulnerable modern web application (Node.js/Angular/Express). The target for your Month 3 Capstone Security Assessment.</p>
+              <a href="https://owasp.org/www-project-juice-shop/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+
+          <div class="card arsenal-card">
+            <div class="card-icon-wrap blue"><i data-lucide="network"></i></div>
+            <div class="card-content">
+              <span class="card-tag">Networking</span>
+              <h3>Cisco Networking Academy</h3>
+              <p>Industry-standard introductory courses on computer networking, TCP/IP, routing, switching, and cybersecurity foundations.</p>
+              <a href="https://www.netacad.com/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+
+          <div class="card arsenal-card">
+            <div class="card-icon-wrap yellow"><i data-lucide="shield-alert"></i></div>
+            <div class="card-content">
+              <span class="card-tag">Adversary TTPs</span>
+              <h3>MITRE ATT&CK®</h3>
+              <p>Global curated knowledge base of real-world adversary tactics, techniques, and common knowledge used by Red and Blue teams.</p>
+              <a href="https://attack.mitre.org/resources/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+
+          <div class="card arsenal-card">
+            <div class="card-icon-wrap pink"><i data-lucide="book-open"></i></div>
+            <div class="card-content">
+              <span class="card-tag">Standard</span>
+              <h3>NIST SP 800-115</h3>
+              <p>Technical Guide to Information Security Testing and Assessment. Learn professional scoping, planning, and reporting standards.</p>
+              <a href="https://csrc.nist.gov/pubs/sp/800/115/final" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 6: SETTINGS & GITHUB SETUP ==================== -->
+    <section class="tab-pane" id="pane-settings">
+      <div class="page-hero-header">
+        <div class="page-hero-left">
+          <div class="page-hero-badge"><i data-lucide="settings"></i> <span>VAULT & CLOUD SYNC</span></div>
+          <h1 class="page-hero-title">Storage & Personal GitHub Setup</h1>
+          <p class="page-hero-desc">Save locally in browser vault or connect to your own private GitHub repo</p>
+        </div>
+      </div>
+      <div class="content-container">
+        <div class="card status-card">
+          <h2>Storage & Personal GitHub Setup</h2>
+          <p>Choose whether to save your notes locally in your browser vault or automatically sync to your personal GitHub repository.</p>
+
+          <div class="storage-selection-cards">
+            <!-- Mode 1: Local Vault -->
+            <div class="storage-mode-card active" id="cardModeLocal" onclick="selectStorageMode('local')">
+              <div class="mode-icon"><i data-lucide="database"></i></div>
+              <h3>1. Local Browser Vault (Zero Setup)</h3>
+              <p>Save unlimited notes, drafts, and track roadmap progress directly inside your browser storage. No GitHub account required.</p>
+              <span class="mode-badge">Active Default</span>
+            </div>
+
+            <!-- Mode 2: GitHub Cloud -->
+            <div class="storage-mode-card" id="cardModeGitHub" onclick="selectStorageMode('github')">
+              <div class="mode-icon"><i data-lucide="github"></i></div>
+              <h3>2. Connect Your Personal GitHub Repo</h3>
+              <p>Every time you click "Post to GitHub", your note is committed directly to your repository via GitHub's official REST API.</p>
+              <span class="mode-badge">Cloud Git Push</span>
+            </div>
+          </div>
+
+          <!-- GitHub Config Form -->
+          <div class="github-config-box" id="githubConfigBox">
+            <h3>GitHub Repository Credentials</h3>
+            <p class="config-subtitle">Stored strictly in your own browser localStorage. Never sent to any third-party server.</p>
+
+            <div class="config-grid">
+              <div class="meta-field">
+                <label for="cfgUsername">GitHub Username</label>
+                <input type="text" id="cfgUsername" class="form-control" placeholder="e.g. your-username">
+              </div>
+
+              <div class="meta-field">
+                <label for="cfgRepo">Target Repository</label>
+                <input type="text" id="cfgRepo" class="form-control" placeholder="e.g. red-team-foundations">
+              </div>
+
+              <div class="meta-field">
+                <label for="cfgBranch">Branch</label>
+                <input type="text" id="cfgBranch" class="form-control" value="main">
+              </div>
+
+              <div class="meta-field">
+                <label for="cfgToken">Personal Access Token (PAT)</label>
+                <input type="password" id="cfgToken" class="form-control" placeholder="ghp_... (requires 'repo' scope)">
+                <small class="field-hint">Generate at GitHub &gt; Settings &gt; Developer Settings &gt; Personal Access Tokens (Classic with 'repo' scope).</small>
+              </div>
+            </div>
+
+            <div class="config-actions">
+              <button class="btn btn-secondary btn-sm" id="btnTestGitHubConnection">
+                <i data-lucide="plug"></i> <span>Test Connection</span>
+              </button>
+              <button class="btn btn-primary btn-sm" id="btnSaveGitHubConfig">
+                <i data-lucide="save"></i> <span>Save Configuration</span>
+              </button>
+              <button class="btn btn-ghost btn-sm" id="btnDisconnectGitHub">
+                <i data-lucide="power"></i> <span>Disconnect</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== SETUP MODAL ==================== -->
+  <div class="modal-overlay" id="setupModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="settings"></i>
+          <h3>Storage & Sync Configuration</h3>
+        </div>
+        <button class="modal-close" id="btnCloseSetupModal" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 12px; color: var(--fg-muted); margin-bottom: 16px;">
+          Choose how you want to save your daily notes. You can use this app completely private & offline in your browser, or link your own GitHub repository.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button class="btn btn-secondary btn-lg" style="justify-content: flex-start;" onclick="selectStorageMode('local'); dom.setupModal.classList.remove('open');">
+            <i data-lucide="database"></i> <span>Use Local Browser Vault (No GitHub Required)</span>
+          </button>
+          <button class="btn btn-primary btn-lg" style="justify-content: flex-start;" onclick="switchTab('settings'); dom.setupModal.classList.remove('open');">
+            <i data-lucide="github"></i> <span>Configure Personal GitHub Repository</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DRAFTS MODAL ==================== -->
+  <div class="modal-overlay" id="draftsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="folder-clock"></i>
+          <h3>Saved Note Drafts</h3>
+        </div>
+        <button class="modal-close" id="btnCloseDraftsModal" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body" id="draftsListContainer">
+        <!-- Populated via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SUCCESS CELEBRATION MODAL ==================== -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal-card modal-success">
+      <div class="success-icon-wrap">
+        <i data-lucide="check-circle" class="big-success-icon"></i>
+      </div>
+      <h3 class="success-title" id="successTitle">Note Successfully Saved</h3>
+      <p class="success-desc" id="successDesc">Your daily note has been safely stored.</p>
+
+      <div class="success-links-box" id="successLinksBox">
+        <div class="link-item">
+          <span class="link-label">File / Destination:</span>
+          <a href="#" target="_blank" rel="noopener noreferrer" id="successFileLink" class="accent-link">...</a>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="btnCloseSuccessModal">Continue Learning</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

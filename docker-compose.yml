@@ -1,0 +1,10 @@
+services:
+  red-team-tracker:
+    build: .
+    container_name: red-team-tracker
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - NODE_ENV=production

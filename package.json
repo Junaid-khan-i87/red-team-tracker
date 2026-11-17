@@ -1,0 +1,28 @@
+{
+  "name": "red-team-tracker",
+  "version": "1.0.0",
+  "description": "Distraction-free 90-day study tracker, curriculum matrix, and markdown notes studio for offensive security learners.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "red-team",
+    "cybersecurity",
+    "offensive-security",
+    "study-tracker",
+    "markdown-editor",
+    "90-day-challenge",
+    "ethical-hacking",
+    "infosec",
+    "learning-path"
+  ],
+  "author": "Junaid Khan (https://github.com/Junaid-khan-i87)",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.3.0"
+  }
+}
